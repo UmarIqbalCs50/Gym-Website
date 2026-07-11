@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose a plan — HM Fitness</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">HM <span class="brand-accent">Fitness</span></a>
+    <div class="nav-links">
+      <a href="#" id="logoutLink">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="card" style="max-width:520px;">
+    <h1>Choose your plan</h1>
+    <div class="sub" id="subText">Pick a plan below. Our team will contact you to complete payment, and your account unlocks once payment is verified.</div>
+
+    <div class="msg" id="msg"></div>
+
+    <div id="pickView">
+      <div class="admission-note" id="admissionNote" style="margin-bottom:18px;"></div>
+      <form id="planForm">
+        <div class="plan-pick" id="planPick"></div>
+        <button type="submit" class="btn btn-primary btn-block mt-24" id="submitBtn" disabled>Request this plan</button>
+      </form>
+    </div>
+
+    <div id="pendingView" style="display:none;">
+      <div class="locked-panel">
+        <div class="icon">⏳</div>
+        <strong>Request sent — <span id="pendingPlanName"></span></strong>
+        <p class="small mt-24">Our team will contact you on your registered number to complete payment. Once payment is verified by admin, workouts and diet plans will unlock automatically on your dashboard.</p>
+        <a href="/dashboard.html" class="btn btn-outline mt-24">Go to dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const msg = document.getElementById("msg");
+  let selectedPlan = null;
+
+  (async function init() {
+    if (!API.getToken()) { window.location.href = "/login.html"; return; }
+
+    try {
+      const [settings, meRes] = await Promise.all([API.getSettings(), API.me()]);
+      const user = meRes.user;
+
+      if (user.paymentStatus === "pending" || user.paymentStatus === "verified") {
+        document.getElementById("pickView").style.display = "none";
+        document.getElementById("pendingView").style.display = "block";
+        document.getElementById("pendingPlanName").textContent = user.plan;
+        if (user.paymentStatus === "verified") {
+          document.querySelector("#pendingView strong").textContent = "Plan active — " + user.plan;
+        }
+        return;
+      }
+
+      document.getElementById("admissionNote").innerHTML =
+        `<span>⚠</span><span><strong>One-time admission fee</strong> — ${money(settings.fees.admission)}, in addition to your plan.</span>`;
+
+      const plans = [
+        { key: "monthly", name: "Monthly", price: settings.fees.monthly },
+        { key: "quarterly", name: "Quarterly", price: settings.fees.quarterly },
+        { key: "yearly", name: "Yearly", price: settings.fees.yearly },
+      ];
+
+      const pick = document.getElementById("planPick");
+      pick.innerHTML = plans.map(p => `
+        <label class="plan-option" data-key="${p.key}">
+          <span class="name">${p.name}</span>
+          <span class="price">${money(p.price)}</span>
+          <input type="radio" name="plan" value="${p.key}">
+        </label>
+      `).join("");
+
+      pick.querySelectorAll(".plan-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          pick.querySelectorAll(".plan-option").forEach(o => o.classList.remove("active"));
+          opt.classList.add("active");
+          opt.querySelector("input").checked = true;
+          selectedPlan = opt.dataset.key;
+          document.getElementById("submitBtn").disabled = false;
+        });
+      });
+    } catch (err) {
+      showMsg(msg, err.message);
+    }
+  })();
+
+  document.getElementById("planForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!selectedPlan) return;
+    hideMsg(msg);
+
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending request...";
+
+    try {
+      await API.buyPlan(selectedPlan);
+      document.getElementById("pickView").style.display = "none";
+      document.getElementById("pendingView").style.display = "block";
+      document.getElementById("pendingPlanName").textContent = selectedPlan;
+    } catch (err) {
+      showMsg(msg, err.message);
+      btn.disabled = false;
+      btn.textContent = "Request this plan";
+    }
+  });
+
+  document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    API.clearToken();
+    window.location.href = "/login.html";
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin panel — HM Fitness</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">HM <span class="brand-accent">Fitness</span> <span class="small">Admin</span></a>
+    <div class="nav-links">
+      <a href="#" id="logoutLink" style="display:none;">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ADMIN LOGIN -->
+<div class="auth-wrap" id="loginView">
+  <div class="card">
+    <h1>Admin login</h1>
+    <div class="sub">Manage members, payments and site content.</div>
+    <div class="msg" id="loginMsg"></div>
+    <form id="adminLoginForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Log in</button>
+    </form>
+    <div class="foot-link small">Default: admin / admin123 — change this after first login.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-shell" id="panelView" style="display:none;">
+  <aside class="admin-sidebar">
+    <button data-panel="users" class="active">Members &amp; Payments</button>
+    <button data-panel="settings">Site Settings</button>
+    <button data-panel="content">Workouts &amp; Diets</button>
+    <button data-panel="account">Admin Account</button>
+  </aside>
+
+  <main class="admin-main">
+
+    <section class="admin-panel active" id="panel-users">
+      <h2>Members &amp; Payments</h2>
+      <p class="small">Verify a member's payment to unlock their workouts and diet plans.</p>
+      <div class="msg" id="usersMsg"></div>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Phone</th><th>Gender</th><th>Plan</th><th>Status</th><th>Joined</th><th></th></tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </section>
+
+    <section class="admin-panel" id="panel-settings">
+      <h2>Site Settings</h2>
+      <p class="small">Everything on the public site — name, location, timings, fees — is editable here.</p>
+      <div class="msg" id="settingsMsg"></div>
+
+      <form id="settingsForm">
+        <fieldset>
+          <legend>General</legend>
+          <div class="form-grid">
+            <div class="field"><label>Gym name</label><input id="s_gymName" required></div>
+            <div class="field"><label>Location</label><input id="s_location" required></div>
+          </div>
+          <div class="field"><label>Tagline</label><input id="s_tagline"></div>
+          <div class="field"><label>About text (shown on homepage)</label><textarea id="s_about" rows="3"></textarea></div>
+          <div class="field"><label>Contact phone</label><input id="s_contactPhone"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Timings</legend>
+          <div class="form-grid">
+            <div class="field"><label>Male — label</label><input id="s_maleLabel"></div>
+            <div class="field"><label>Female — label</label><input id="s_femaleLabel"></div>
+            <div class="field"><label>Male — start</label><input id="s_maleStart" placeholder="6:00 PM"></div>
+            <div class="field"><label>Female — start</label><input id="s_femaleStart" placeholder="2:00 PM"></div>
+            <div class="field"><label>Male — end</label><input id="s_maleEnd" placeholder="12:00 AM"></div>
+            <div class="field"><label>Female — end</label><input id="s_femaleEnd" placeholder="6:00 PM"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Fees (PKR)</legend>
+          <div class="form-grid">
+            <div class="field"><label>Admission fee (one-time)</label><input type="number" id="s_admission" min="0"></div>
+            <div class="field"><label>Monthly</label><input type="number" id="s_monthly" min="0"></div>
+            <div class="field"><label>Quarterly</label><input type="number" id="s_quarterly" min="0"></div>
+            <div class="field"><label>Yearly</label><input type="number" id="s_yearly" min="0"></div>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">Save site settings</button>
+      </form>
+    </section>
+
+    <section class="admin-panel" id="panel-content">
+      <h2>Workouts &amp; Diets</h2>
+      <p class="small">Shown to members only after their payment is verified.</p>
+      <div class="msg" id="contentMsg"></div>
+
+      <div class="form-grid wide">
+        <div>
+          <div class="flex-between"><h3>Workouts</h3><button class="btn btn-outline btn-sm" id="addWorkout" type="button">+ Add workout</button></div>
+          <div id="workoutsList"></div>
+        </div>
+        <div>
+          <div class="flex-between"><h3>Diets</h3><button class="btn btn-outline btn-sm" id="addDiet" type="button">+ Add diet</button></div>
+          <div id="dietsList"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt-24" id="saveContentBtn">Save workouts &amp; diets</button>
+    </section>
+
+    <section class="admin-panel" id="panel-account">
+      <h2>Admin Account</h2>
+      <div class="msg" id="accountMsg"></div>
+      <form id="passwordForm" style="max-width:400px;">
+        <div class="field"><label>New admin password</label><input type="password" id="newPassword" minlength="6" required></div>
+        <button type="submit" class="btn btn-primary">Update password</button>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const loginView = document.getElementById("loginView");
+  const panelView = document.getElementById("panelView");
+  const loginMsg = document.getElementById("loginMsg");
+
+  if (API.getAdminToken()) showPanel();
+
+  document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMsg(loginMsg);
+    const btn = document.getElementById("loginBtn");
+    btn.disabled = true; btn.textContent = "Logging in...";
+    try {
+      const { token } = await API.adminLogin({
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value,
+      });
+      API.setAdminToken(token);
+      showPanel();
+    } catch (err) {
+      showMsg(loginMsg, err.message);
+      btn.disabled = false; btn.textContent = "Log in";
+    }
+  });
+
+  document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    API.clearAdminToken();
+    location.reload();
+  });
+
+  function showPanel() {
+    loginView.style.display = "none";
+    panelView.style.display = "grid";
+    document.getElementById("logoutLink").style.display = "inline";
+    loadUsers();
+    loadSettings();
+    loadContent();
+  }
+
+  // ---------- sidebar nav ----------
+  document.querySelectorAll(".admin-sidebar button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".admin-sidebar button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".admin-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.panel).classList.add("active");
+    });
+  });
+
+  // ---------- users / payments ----------
+  const usersMsg = document.getElementById("usersMsg");
+  async function loadUsers() {
+    try {
+      const users = await API.adminGetUsers();
+      const body = document.getElementById("usersBody");
+      if (!users.length) {
+        body.innerHTML = `<tr><td colspan="7" class="small">No members yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = users.map(u => `
+        <tr>
+          <td>${escapeHtml(u.name)}</td>
+          <td>${escapeHtml(u.phone)}</td>
+          <td>${u.gender}</td>
+          <td>${u.plan || "—"}</td>
+          <td><span class="badge-status ${u.paymentStatus}">${u.paymentStatus}</span></td>
+          <td class="small">${new Date(u.createdAt).toLocaleDateString()}</td>
+          <td>
+            ${u.paymentStatus === "pending" ? `
+              <button class="btn btn-primary btn-sm" data-verify="${u.id}">Verify</button>
+              <button class="btn btn-outline btn-sm" data-reject="${u.id}">Reject</button>
+            ` : ""}
+          </td>
+        </tr>
+      `).join("");
+
+      body.querySelectorAll("[data-verify]").forEach(b => b.addEventListener("click", async () => {
+        try { await API.adminVerifyUser(b.dataset.verify); showMsg(usersMsg, "Payment verified — member unlocked.", "success"); loadUsers(); }
+        catch (err) { showMsg(usersMsg, err.message); }
+      }));
+      body.querySelectorAll("[data-reject]").forEach(b => b.addEventListener("click", async () => {
+        try { await API.adminRejectUser(b.dataset.reject); showMsg(usersMsg, "Payment marked as rejected.", "success"); loadUsers(); }
+        catch (err) { showMsg(usersMsg, err.message); }
+      }));
+    } catch (err) {
+      showMsg(usersMsg, err.message);
+    }
+  }
+
+  // ---------- site settings ----------
+  const settingsMsg = document.getElementById("settingsMsg");
+  let currentSettings = null;
+  async function loadSettings() {
+    try {
+      currentSettings = await API.getSettings();
+      const s = currentSettings;
+      document.getElementById("s_gymName").value = s.gymName;
+      document.getElementById("s_location").value = s.location;
+      document.getElementById("s_tagline").value = s.tagline || "";
+      document.getElementById("s_about").value = s.aboutText || "";
+      document.getElementById("s_contactPhone").value = s.contactPhone || "";
+      document.getElementById("s_maleLabel").value = s.timings.male.label;
+      document.getElementById("s_femaleLabel").value = s.timings.female.label;
+      document.getElementById("s_maleStart").value = s.timings.male.start;
+      document.getElementById("s_femaleStart").value = s.timings.female.start;
+      document.getElementById("s_maleEnd").value = s.timings.male.end;
+      document.getElementById("s_femaleEnd").value = s.timings.female.end;
+      document.getElementById("s_admission").value = s.fees.admission;
+      document.getElementById("s_monthly").value = s.fees.monthly;
+      document.getElementById("s_quarterly").value = s.fees.quarterly;
+      document.getElementById("s_yearly").value = s.fees.yearly;
+    } catch (err) {
+      showMsg(settingsMsg, err.message);
+    }
+  }
+
+  document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMsg(settingsMsg);
+    const payload = {
+      gymName: document.getElementById("s_gymName").value.trim(),
+      location: document.getElementById("s_location").value.trim(),
+      tagline: document.getElementById("s_tagline").value.trim(),
+      aboutText: document.getElementById("s_about").value.trim(),
+      contactPhone: document.getElementById("s_contactPhone").value.trim(),
+      timings: {
+        male: { label: document.getElementById("s_maleLabel").value, start: document.getElementById("s_maleStart").value, end: document.getElementById("s_maleEnd").value },
+        female: { label: document.getElementById("s_femaleLabel").value, start: document.getElementById("s_femaleStart").value, end: document.getElementById("s_femaleEnd").value },
+      },
+      fees: {
+        admission: Number(document.getElementById("s_admission").value),
+        monthly: Number(document.getElementById("s_monthly").value),
+        quarterly: Number(document.getElementById("s_quarterly").value),
+        yearly: Number(document.getElementById("s_yearly").value),
+      },
+    };
+    try {
+      await API.adminUpdateSettings(payload);
+      showMsg(settingsMsg, "Site settings saved.", "success");
+    } catch (err) {
+      showMsg(settingsMsg, err.message);
+    }
+  });
+
+  // ---------- workouts & diets ----------
+  const contentMsg = document.getElementById("contentMsg");
+  let workouts = [], diets = [];
+
+  async function loadContent() {
+    try {
+      const data = await API.adminGetContent();
+      workouts = data.workouts || [];
+      diets = data.diets || [];
+      renderLists();
+    } catch (err) {
+      showMsg(contentMsg, err.message);
+    }
+  }
+
+  document.getElementById("addWorkout").addEventListener("click", () => {
+    workouts.push({ id: "w_" + Date.now(), title: "New workout", description: "" });
+    renderLists();
+  });
+  document.getElementById("addDiet").addEventListener("click", () => {
+    diets.push({ id: "d_" + Date.now(), title: "New diet plan", description: "" });
+    renderLists();
+  });
+
+  function renderLists() {
+    document.getElementById("workoutsList").innerHTML = workouts.map((w, i) => itemHtml(w, i, "w")).join("") || `<p class="small">No workouts yet.</p>`;
+    document.getElementById("dietsList").innerHTML = diets.map((d, i) => itemHtml(d, i, "d")).join("") || `<p class="small">No diet plans yet.</p>`;
+    bindItemEvents();
+  }
+
+  function itemHtml(item, i, prefix) {
+    return `
+      <div class="editable-item" data-idx="${i}" data-type="${prefix}">
+        <div class="editable-item-head">
+          <strong class="small">${prefix === "w" ? "Workout" : "Diet"} ${i + 1}</strong>
+          <button class="btn btn-ghost btn-sm" data-remove="${prefix}:${i}" type="button">Remove</button>
+        </div>
+        <div class="field"><label>Title</label><input value="${escapeAttr(item.title)}" data-field="title"></div>
+        <div class="field"><label>Description</label><textarea rows="2" data-field="description">${escapeHtml(item.description)}</textarea></div>
+      </div>
+    `;
+  }
+
+  function bindItemEvents() {
+    document.querySelectorAll(".editable-item").forEach(el => {
+      const idx = Number(el.dataset.idx);
+      const type = el.dataset.type;
+      const list = type === "w" ? workouts : diets;
+      el.querySelectorAll("[data-field]").forEach(input => {
+        input.addEventListener("input", () => {
+          list[idx][input.dataset.field] = input.value;
+        });
+      });
+    });
+    document.querySelectorAll("[data-remove]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const [type, idx] = btn.dataset.remove.split(":");
+        (type === "w" ? workouts : diets).splice(Number(idx), 1);
+        renderLists();
+      });
+    });
+  }
+
+  document.getElementById("saveContentBtn").addEventListener("click", async () => {
+    hideMsg(contentMsg);
+    try {
+      await API.adminUpdateContent({ workouts, diets });
+      showMsg(contentMsg, "Workouts & diets saved.", "success");
+    } catch (err) {
+      showMsg(contentMsg, err.message);
+    }
+  });
+
+  // ---------- admin password ----------
+  const accountMsg = document.getElementById("accountMsg");
+  document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMsg(accountMsg);
+    try {
+      await API.adminChangePassword(document.getElementById("newPassword").value);
+      showMsg(accountMsg, "Password updated.", "success");
+      document.getElementById("newPassword").value = "";
+    } catch (err) {
+      showMsg(accountMsg, err.message);
+    }
+  });
+
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str || "";
+    return d.innerHTML;
+  }
+  function escapeAttr(str) {
+    return (str || "").replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>

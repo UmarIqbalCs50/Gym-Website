@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — HM Fitness</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">HM <span class="brand-accent">Fitness</span></a>
+    <div class="nav-links">
+      <a href="#" id="logoutLink">Log out</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container section">
+  <div class="dash-header">
+    <div>
+      <h1 id="welcome">Welcome</h1>
+      <span class="badge-status" id="statusBadge">—</span>
+    </div>
+    <div id="planInfo" class="small"></div>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  (async function () {
+    if (!API.getToken()) { window.location.href = "/login.html"; return; }
+
+    let user;
+    try {
+      const meRes = await API.me();
+      user = meRes.user;
+    } catch (e) {
+      API.clearToken();
+      window.location.href = "/login.html";
+      return;
+    }
+
+    document.getElementById("welcome").textContent = "Hey, " + user.name.split(" ")[0];
+    const badge = document.getElementById("statusBadge");
+    badge.textContent = statusLabel(user.paymentStatus);
+    badge.classList.add(user.paymentStatus);
+
+    if (!user.plan) {
+      window.location.href = "/buy-plan.html";
+      return;
+    }
+    document.getElementById("planInfo").textContent = "Plan: " + user.plan;
+
+    const contentEl = document.getElementById("content");
+
+    if (user.paymentStatus !== "verified") {
+      contentEl.innerHTML = `
+        <div class="locked-panel">
+          <div class="icon">🔒</div>
+          <strong>Workouts &amp; diet plans are locked</strong>
+          <p class="small mt-24">
+            ${user.paymentStatus === "rejected"
+              ? "Your last payment couldn't be verified. Please contact our team, or request your plan again."
+              : "Our team will contact you to complete payment. Once admin verifies your payment, this unlocks automatically."}
+          </p>
+          ${user.paymentStatus === "rejected" ? `<a href="/buy-plan.html" class="btn btn-outline mt-24">Request plan again</a>` : ""}
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const data = await API.getContent();
+      contentEl.innerHTML = `
+        <div class="section-head">
+          <div class="eyebrow">Your program</div>
+          <h2>Workouts</h2>
+        </div>
+        <div class="content-grid">
+          ${data.workouts.map(w => `<div class="content-card"><h3>${escapeHtml(w.title)}</h3><p>${escapeHtml(w.description)}</p></div>`).join("")}
+        </div>
+
+        <div class="section-head mt-24">
+          <div class="eyebrow">Nutrition</div>
+          <h2>Diet plans</h2>
+        </div>
+        <div class="content-grid">
+          ${data.diets.map(d => `<div class="content-card"><h3>${escapeHtml(d.title)}</h3><p>${escapeHtml(d.description)}</p></div>`).join("")}
+        </div>
+      `;
+    } catch (err) {
+      contentEl.innerHTML = `<div class="msg show error">${escapeHtml(err.message)}</div>`;
+    }
+  })();
+
+  function statusLabel(s) {
+    return { none: "No plan", pending: "Payment pending", verified: "Active", rejected: "Payment rejected" }[s] || s;
+  }
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    API.clearToken();
+    window.location.href = "/login.html";
+  });
+</script>
+</body>
+</html>

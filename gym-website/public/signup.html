@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account — HM Fitness</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">HM <span class="brand-accent">Fitness</span></a>
+    <div class="nav-links">
+      <a href="/login.html">Already a member? Log in</a>
+    </div>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="card">
+    <h1>Create account</h1>
+    <div class="sub">Sign up first, then choose a membership plan.</div>
+
+    <div class="msg" id="msg"></div>
+
+    <form id="signupForm">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Ahmed Raza" required>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone number (Pakistani)</label>
+        <input type="tel" id="phone" name="phone" placeholder="03001234567" pattern="03[0-9]{9}" maxlength="11" required>
+        <div class="hint">Format: 03XXXXXXXXX (11 digits, no spaces)</div>
+      </div>
+
+      <div class="field">
+        <label>Gender</label>
+        <div class="radio-group" id="genderGroup">
+          <label class="radio-pill" data-value="male">
+            <input type="radio" name="gender" value="male" required> Male
+          </label>
+          <label class="radio-pill" data-value="female">
+            <input type="radio" name="gender" value="female" required> Female
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="At least 6 characters" minlength="6" required>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirm password</label>
+        <input type="password" id="confirm" name="confirm" placeholder="Re-enter password" minlength="6" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Create account</button>
+    </form>
+
+    <div class="foot-link">Already have an account? <a href="/login.html">Log in</a></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+  const msg = document.getElementById("msg");
+
+  document.querySelectorAll("#genderGroup .radio-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll("#genderGroup .radio-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      pill.querySelector("input").checked = true;
+    });
+  });
+
+  document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMsg(msg);
+
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const gender = document.querySelector('input[name="gender"]:checked')?.value;
+    const password = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm").value;
+
+    if (!gender) return showMsg(msg, "Please select a gender.");
+    if (!/^03[0-9]{9}$/.test(phone)) return showMsg(msg, "Enter a valid Pakistani number, e.g. 03001234567.");
+    if (password !== confirm) return showMsg(msg, "Passwords do not match.");
+
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Creating account...";
+
+    try {
+      const { token } = await API.signup({ name, phone, gender, password });
+      API.setToken(token);
+      window.location.href = "/buy-plan.html";
+    } catch (err) {
+      showMsg(msg, err.message);
+      btn.disabled = false;
+      btn.textContent = "Create account";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HM Fitness — Mirpurkhas</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand" id="brandName">HM <span class="brand-accent">Fitness</span></a>
+    <div class="nav-links">
+      <a href="/#plans">Plans</a>
+      <a href="/#schedule">Schedule</a>
+      <a href="/login.html">Log in</a>
+      <a href="/signup.html" class="btn btn-primary btn-sm">Join now</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow" id="eyebrowLocation">MIRPURKHAS, SINDH</div>
+    <h1>TRAIN<br>WITHOUT<br><span class="cut">EXCUSES.</span></h1>
+    <p class="lead" id="aboutText">Loading...</p>
+    <div class="hero-ctas">
+      <a href="/signup.html" class="btn btn-primary">Create account</a>
+      <a href="#plans" class="btn btn-outline">See membership plans</a>
+    </div>
+
+    <div class="gate-board" id="schedule">
+      <div class="gate-board-head">
+        <span><span class="dot">●</span> Gym floor status — open on schedule</span>
+        <span id="locationTag">Mirpurkhas</span>
+      </div>
+      <div class="gate-rows">
+        <div class="gate-row male">
+          <div class="label" id="maleLabel">Male Hours</div>
+          <div class="time" id="maleTime">6:00 PM – 12:00 AM</div>
+        </div>
+        <div class="gate-row female">
+          <div class="label" id="femaleLabel">Female Hours</div>
+          <div class="time" id="femaleTime">2:00 PM – 6:00 PM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="plans">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Membership</div>
+      <h2>Pick your plan</h2>
+      <p>Every plan includes full gym access, based on your session hours. Sign up, choose a plan, and our team will contact you to complete payment.</p>
+    </div>
+
+    <div class="plates" id="plansGrid">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="admission-note" id="admissionNote">
+      <span>⚠</span>
+      <span><strong>One-time admission fee</strong> — Rs 2,500, charged once when you join, in addition to your plan.</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="container text-center">
+    <a href="/signup.html" class="btn btn-primary">Get started — create your account</a>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <span id="footerName">HM Fitness</span>
+    <span id="footerContact">Contact: 0300-0000000</span>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script>
+(async function () {
+  try {
+    const s = await API.getSettings();
+
+    document.title = s.gymName + " — " + s.location;
+    document.getElementById("brandName").innerHTML = s.gymName.split(" ").map((w,i)=> i===0 ? w : `<span class="brand-accent">${w}</span>`).join(" ");
+    document.getElementById("eyebrowLocation").textContent = s.location.toUpperCase();
+    document.getElementById("locationTag").textContent = s.location;
+    document.getElementById("aboutText").textContent = s.aboutText;
+    document.getElementById("footerName").textContent = "© " + new Date().getFullYear() + " " + s.gymName;
+    document.getElementById("footerContact").textContent = "Contact: " + s.contactPhone;
+
+    document.getElementById("maleLabel").textContent = s.timings.male.label;
+    document.getElementById("maleTime").textContent = `${s.timings.male.start} – ${s.timings.male.end}`;
+    document.getElementById("femaleLabel").textContent = s.timings.female.label;
+    document.getElementById("femaleTime").textContent = `${s.timings.female.start} – ${s.timings.female.end}`;
+
+    document.getElementById("admissionNote").innerHTML =
+      `<span>⚠</span><span><strong>One-time admission fee</strong> — ${money(s.fees.admission)}, charged once when you join, in addition to your plan.</span>`;
+
+    const plans = [
+      { key: "monthly", name: "Monthly", price: s.fees.monthly, note: "Billed every month", featured: false },
+      { key: "quarterly", name: "Quarterly", price: s.fees.quarterly, note: "Billed every 3 months", featured: true },
+      { key: "yearly", name: "Yearly", price: s.fees.yearly, note: "Billed once a year — best value", featured: false },
+    ];
+    document.getElementById("plansGrid").innerHTML = plans.map(p => `
+      <div class="plate ${p.featured ? "featured" : ""}">
+        ${p.featured ? '<span class="badge">Most popular</span>' : ""}
+        <div class="plate-name">${p.name}</div>
+        <div class="plate-price">${money(p.price)} <small>/ ${p.key === "yearly" ? "yr" : p.key === "quarterly" ? "qtr" : "mo"}</small></div>
+        <div class="plate-note">${p.note}</div>
+      </div>
+    `).join("");
+  } catch (e) {
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
