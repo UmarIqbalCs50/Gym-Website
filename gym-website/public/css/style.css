@@ -70,7 +70,7 @@ img { max-width: 100%; }
   gap: 8px;
 }
 .brand .brand-accent { color: var(--red); }
-.nav-links { display: flex; gap: 22px; align-items: center; }
+.nav-links { display: flex; gap: 28px; align-items: center; }
 .nav-links a {
   text-decoration: none;
   color: var(--paper-dim);
