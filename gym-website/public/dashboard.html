@@ -30,6 +30,12 @@
 </div>
 
 <script src="/js/api.js"></script>
+<script>
+  API.getSettings().then(s => {
+    document.getElementById("brandName").innerHTML =
+      s.gymName.split(" ").map((w,i)=> i===0 ? w : `<span class="brand-accent">${w}</span>`).join(" ");
+  }).catch(() => {});
+</script>
 <script src="/js/whatsapp.js"></script>
 <script>
      API.getSettings().then(s => {
