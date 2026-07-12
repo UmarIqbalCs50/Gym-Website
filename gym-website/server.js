@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "hm-fitness-dev-secret-change-me";
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "6mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 let db;
@@ -345,6 +345,17 @@ app.post("/api/admin/login", authLimiter, safe(async (req, res) => {
 // =========================================================
 app.put("/api/admin/settings", authAdmin, safe(async (req, res) => {
   const meta = await getMeta();
+
+  if (req.body.photoUrl) {
+    const isDataUrl = /^data:image\/(png|jpe?g|webp);base64,/.test(req.body.photoUrl);
+    if (!isDataUrl) {
+      return res.status(400).json({ error: "Gym photo must be a PNG, JPG, or WEBP image." });
+    }
+    if (req.body.photoUrl.length > 5_000_000) {
+      return res.status(400).json({ error: "That photo is too large. Please use an image under 3MB." });
+    }
+  }
+
   const merged = { ...meta.settings, ...req.body };
   await updateMeta({ settings: merged });
   res.json(merged);
