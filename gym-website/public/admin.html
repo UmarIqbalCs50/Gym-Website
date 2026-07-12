@@ -44,7 +44,6 @@
     <button data-panel="users" class="active">Members &amp; Payments</button>
     <button data-panel="settings">Site Settings</button>
     <button data-panel="content">Workouts &amp; Diets</button>
-    <button data-panel="email">Email Settings</button>
     <button data-panel="account">Admin Account</button>
   </aside>
 
@@ -76,12 +75,7 @@
           </div>
           <div class="field"><label>Tagline</label><input id="s_tagline"></div>
           <div class="field"><label>About text (shown on homepage)</label><textarea id="s_about" rows="3"></textarea></div>
-          <div class="field"><label>Contact phone (displayed on site)</label><input id="s_contactPhone"></div>
-          <div class="field">
-            <label>WhatsApp number</label>
-            <input id="s_whatsapp" placeholder="e.g. 923001234567">
-            <div class="hint">Include country code, no + or spaces. Pakistan example: 923001234567</div>
-          </div>
+          <div class="field"><label>Contact phone</label><input id="s_contactPhone"></div>
         </fieldset>
 
         <fieldset>
@@ -127,40 +121,6 @@
       </div>
 
       <button class="btn btn-primary mt-24" id="saveContentBtn">Save workouts &amp; diets</button>
-    </section>
-
-    <section class="admin-panel" id="panel-email">
-      <h2>Email Settings</h2>
-      <p class="small">Set up your Gmail so members can receive password reset emails. Takes 2 minutes.</p>
-      <div id="emailStatusBadge"></div>
-      <div class="msg" id="emailMsg"></div>
-
-      <div style="background:var(--steel);border:1px solid var(--line);border-radius:6px;padding:16px 20px;margin-bottom:24px;">
-        <p class="small" style="margin:0 0 8px;font-weight:600;">How to get a Gmail App Password:</p>
-        <ol class="small" style="margin:0;padding-left:20px;color:var(--paper-dim);line-height:1.8;">
-          <li>Go to your Gmail account → <strong>Security</strong></li>
-          <li>Enable <strong>2-Step Verification</strong> if not already on</li>
-          <li>Search for <strong>"App passwords"</strong> in Google Account settings</li>
-          <li>Create a new App Password → select "Mail" → copy the 16-digit code</li>
-          <li>Paste it below</li>
-        </ol>
-      </div>
-
-      <form id="emailForm" style="max-width:480px;">
-        <div class="field">
-          <label>Your Gmail address</label>
-          <input type="email" id="e_gmail" placeholder="gymname@gmail.com" required>
-        </div>
-        <div class="field">
-          <label>Gmail App Password</label>
-          <input type="password" id="e_apppass" placeholder="16-digit app password from Google" required>
-          <div class="hint">This is NOT your regular Gmail password — it's a special app password from Google Security.</div>
-        </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button type="submit" class="btn btn-primary" id="saveEmailBtn">Save email settings</button>
-          <button type="button" class="btn btn-outline" id="testEmailBtn">Send test email</button>
-        </div>
-      </form>
     </section>
 
     <section class="admin-panel" id="panel-account">
@@ -214,7 +174,6 @@
     loadUsers();
     loadSettings();
     loadContent();
-    loadEmailConfig();
   }
 
   // ---------- sidebar nav ----------
@@ -279,7 +238,6 @@
       document.getElementById("s_tagline").value = s.tagline || "";
       document.getElementById("s_about").value = s.aboutText || "";
       document.getElementById("s_contactPhone").value = s.contactPhone || "";
-      document.getElementById("s_whatsapp").value = s.whatsappNumber || "";
       document.getElementById("s_maleLabel").value = s.timings.male.label;
       document.getElementById("s_femaleLabel").value = s.timings.female.label;
       document.getElementById("s_maleStart").value = s.timings.male.start;
@@ -304,7 +262,6 @@
       tagline: document.getElementById("s_tagline").value.trim(),
       aboutText: document.getElementById("s_about").value.trim(),
       contactPhone: document.getElementById("s_contactPhone").value.trim(),
-      whatsappNumber: document.getElementById("s_whatsapp").value.trim(),
       timings: {
         male: { label: document.getElementById("s_maleLabel").value, start: document.getElementById("s_maleStart").value, end: document.getElementById("s_maleEnd").value },
         female: { label: document.getElementById("s_femaleLabel").value, start: document.getElementById("s_femaleStart").value, end: document.getElementById("s_femaleEnd").value },
@@ -409,48 +366,6 @@
     } catch (err) {
       showMsg(accountMsg, err.message);
     }
-  });
-
-  // ---------- email config ----------
-  const emailMsg = document.getElementById("emailMsg");
-  async function loadEmailConfig() {
-    try {
-      const cfg = await API.adminGetEmailConfig();
-      const badge = document.getElementById("emailStatusBadge");
-      if (cfg.configured) {
-        badge.innerHTML = `<div class="email-status configured">✓ Email configured — ${escapeHtml(cfg.gmailAddress)}</div>`;
-        document.getElementById("e_gmail").value = cfg.gmailAddress;
-      } else {
-        badge.innerHTML = `<div class="email-status not-configured">✗ Email not set up yet — members cannot receive password reset emails</div>`;
-      }
-    } catch(e) {}
-  }
-
-  document.getElementById("emailForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    hideMsg(emailMsg);
-    const btn = document.getElementById("saveEmailBtn");
-    btn.disabled = true; btn.textContent = "Saving...";
-    try {
-      await API.adminUpdateEmailConfig({
-        gmailAddress: document.getElementById("e_gmail").value.trim(),
-        gmailAppPassword: document.getElementById("e_apppass").value,
-      });
-      showMsg(emailMsg, "Email settings saved! Click 'Send test email' to verify it works.", "success");
-      loadEmailConfig();
-    } catch(err) { showMsg(emailMsg, err.message); }
-    btn.disabled = false; btn.textContent = "Save email settings";
-  });
-
-  document.getElementById("testEmailBtn").addEventListener("click", async () => {
-    hideMsg(emailMsg);
-    const btn = document.getElementById("testEmailBtn");
-    btn.disabled = true; btn.textContent = "Sending...";
-    try {
-      await API.adminTestEmail();
-      showMsg(emailMsg, "Test email sent! Check your Gmail inbox to confirm it's working.", "success");
-    } catch(err) { showMsg(emailMsg, err.message); }
-    btn.disabled = false; btn.textContent = "Send test email";
   });
 
   function escapeHtml(str) {

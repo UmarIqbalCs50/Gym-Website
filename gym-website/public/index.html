@@ -77,12 +77,11 @@
 <footer class="site-footer">
   <div class="container">
     <span id="footerName">HM Fitness</span>
-    <span id="footerContact"></span>
+    <span id="footerContact">Contact: 0300-0000000</span>
   </div>
 </footer>
 
 <script src="/js/api.js"></script>
-<script src="/js/whatsapp.js"></script>
 <script>
 (async function () {
   try {
@@ -94,10 +93,7 @@
     document.getElementById("locationTag").textContent = s.location;
     document.getElementById("aboutText").textContent = s.aboutText;
     document.getElementById("footerName").textContent = "© " + new Date().getFullYear() + " " + s.gymName;
-    const wa = (s.whatsappNumber || "").replace(/\D/g, "");
-    document.getElementById("footerContact").innerHTML = wa
-      ? `<a href="https://wa.me/${wa}" target="_blank" style="color:var(--paper-dim);text-decoration:none;">📞 ${s.contactPhone || s.whatsappNumber}</a>`
-      : (s.contactPhone ? "Contact: " + s.contactPhone : "");
+    document.getElementById("footerContact").textContent = "Contact: " + s.contactPhone;
 
     document.getElementById("maleLabel").textContent = s.timings.male.label;
     document.getElementById("maleTime").textContent = `${s.timings.male.start} – ${s.timings.male.end}`;
