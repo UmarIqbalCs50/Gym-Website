@@ -145,6 +145,18 @@
         });
     }
 });
+  async function loadGymName() {
+    try {
+        const settings = await API.getSettings();
+
+        document.getElementById("brandName").innerHTML =
+            `${settings.gymName} <span class="brand-accent">Fitness</span>`;
+
+        document.title = settings.gymName + " Fitness";
+    } catch (err) {
+        console.error(err);
+    }
+}
 </script>
 </body>
 </html>
