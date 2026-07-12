@@ -83,6 +83,20 @@
           </div>
         </fieldset>
 
+         <fieldset>
+    <legend>Gym Photo</legend>
+    <p class="small" style="margin-top:0;">Shown on the homepage. Use a JPG, PNG, or WEBP under 3MB.</p>
+    <div class="field">
+      <img id="photoPreview" src="" alt="" style="display:none; max-width:100%; max-height:220px; border-radius:var(--radius); border:1px solid var(--line); margin-bottom:12px;">
+      <input type="file" id="s_photoFile" accept="image/png,image/jpeg,image/webp">
+      <div class="hint" id="photoHint"></div>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" id="removePhotoBtn" style="display:none;">Remove photo</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Timings</legend>
+
         <fieldset>
           <legend>Timings</legend>
           <div class="form-grid">
