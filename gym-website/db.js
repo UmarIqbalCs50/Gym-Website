@@ -28,6 +28,7 @@ const DEFAULT_META = {
     },
     fees: { admission: 2500, monthly: 2500, quarterly: 8000, yearly: 27000 },
     contactPhone: "0300-0000000",
+    whatsappNumber: "923000000000",
     aboutText:
       "HM Fitness is Mirpurkhas' home for serious training — free weights, machines, and a coaching team that knows your name.",
   },
@@ -82,8 +83,9 @@ async function connectDB() {
   await client.connect();
   dbInstance = client.db(process.env.MONGODB_DB || "hm_fitness");
 
-  // Make sure phone numbers are unique at the database level too.
-  await dbInstance.collection("users").createIndex({ phone: 1 }, { unique: true });
+  // Unique indexes
+  await dbInstance.collection("users").createIndex({ email: 1 }, { unique: true });
+  await dbInstance.collection("users").createIndex({ phone: 1 }, { unique: true, sparse: true });
 
   // Seed default site settings/admin/content on a brand new database.
   const existing = await dbInstance.collection("meta").findOne({ _id: "site" });

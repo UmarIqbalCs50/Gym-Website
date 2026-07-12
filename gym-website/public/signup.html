@@ -27,13 +27,19 @@
     <form id="signupForm">
       <div class="field">
         <label for="name">Full name</label>
-        <input type="text" id="name" name="name" placeholder="e.g. Ahmed Raza" required>
+        <input type="text" id="name" placeholder="e.g. Ahmed Raza" required>
       </div>
 
       <div class="field">
-        <label for="phone">Phone number (Pakistani)</label>
-        <input type="tel" id="phone" name="phone" placeholder="03001234567" pattern="03[0-9]{9}" maxlength="11" required>
-        <div class="hint">Format: 03XXXXXXXXX (11 digits, no spaces)</div>
+        <label for="email">Email address <span class="required-star">*</span></label>
+        <input type="email" id="email" placeholder="you@example.com" required>
+        <div class="hint">Used for password recovery — please use a real email.</div>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone number <span class="optional-tag">optional</span></label>
+        <input type="tel" id="phone" placeholder="03001234567" pattern="03[0-9]{9}" maxlength="11">
+        <div class="hint">Pakistani format: 03XXXXXXXXX</div>
       </div>
 
       <div class="field">
@@ -50,12 +56,25 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="At least 6 characters" minlength="6" required>
+        <input type="password" id="password" placeholder="Create a strong password" required>
+        <div class="password-criteria" id="criteria">
+          <div class="criterion" id="c-length"><span class="criterion-icon">✗</span> At least 8 characters</div>
+          <div class="criterion" id="c-upper"><span class="criterion-icon">✗</span> At least 1 uppercase letter</div>
+          <div class="criterion" id="c-number"><span class="criterion-icon">✗</span> At least 1 number</div>
+        </div>
       </div>
 
       <div class="field">
         <label for="confirm">Confirm password</label>
-        <input type="password" id="confirm" name="confirm" placeholder="Re-enter password" minlength="6" required>
+        <input type="password" id="confirm" placeholder="Re-enter your password" required>
+        <div class="criterion" id="c-match" style="margin-top:6px;display:none;"><span class="criterion-icon">✗</span> Passwords match</div>
+      </div>
+
+      <div class="field">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:400;">
+          <input type="checkbox" id="agreeTerms" style="margin-top:3px;flex-shrink:0;">
+          <span>I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></span>
+        </label>
       </div>
 
       <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Create account</button>
@@ -66,9 +85,13 @@
 </div>
 
 <script src="/js/api.js"></script>
+<script src="/js/whatsapp.js"></script>
 <script>
   const msg = document.getElementById("msg");
+  const passwordInput = document.getElementById("password");
+  const confirmInput = document.getElementById("confirm");
 
+  // Gender pills
   document.querySelectorAll("#genderGroup .radio-pill").forEach(pill => {
     pill.addEventListener("click", () => {
       document.querySelectorAll("#genderGroup .radio-pill").forEach(p => p.classList.remove("active"));
@@ -77,26 +100,58 @@
     });
   });
 
+  // Password criteria live check
+  function setCriterion(id, passed) {
+    const el = document.getElementById(id);
+    const icon = el.querySelector(".criterion-icon");
+    if (passed) {
+      el.classList.add("passed");
+      icon.textContent = "✓";
+    } else {
+      el.classList.remove("passed");
+      icon.textContent = "✗";
+    }
+  }
+
+  passwordInput.addEventListener("input", () => {
+    const v = passwordInput.value;
+    setCriterion("c-length", v.length >= 8);
+    setCriterion("c-upper", /[A-Z]/.test(v));
+    setCriterion("c-number", /[0-9]/.test(v));
+    if (confirmInput.value.length > 0) checkMatch();
+  });
+
+  function checkMatch() {
+    const matchEl = document.getElementById("c-match");
+    matchEl.style.display = "flex";
+    setCriterion("c-match", passwordInput.value === confirmInput.value && passwordInput.value.length > 0);
+  }
+
+  confirmInput.addEventListener("input", checkMatch);
+
+  // Form submit
   document.getElementById("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMsg(msg);
 
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const gender = document.querySelector('input[name="gender"]:checked')?.value;
-    const password = document.getElementById("password").value;
-    const confirm = document.getElementById("confirm").value;
+    const name     = document.getElementById("name").value.trim();
+    const email    = document.getElementById("email").value.trim();
+    const phone    = document.getElementById("phone").value.trim();
+    const gender   = document.querySelector('input[name="gender"]:checked')?.value;
+    const password = passwordInput.value;
+    const confirm  = confirmInput.value;
+    const agreed   = document.getElementById("agreeTerms").checked;
 
-    if (!gender) return showMsg(msg, "Please select a gender.");
-    if (!/^03[0-9]{9}$/.test(phone)) return showMsg(msg, "Enter a valid Pakistani number, e.g. 03001234567.");
-    if (password !== confirm) return showMsg(msg, "Passwords do not match.");
+    if (!gender) return showMsg(msg, "Please select your gender.");
+    if (password !== confirm) return showMsg(msg, "Passwords do not match. Please check and try again.");
+    if (!agreed) return showMsg(msg, "Please agree to the Terms of Service and Privacy Policy to continue.");
 
     const btn = document.getElementById("submitBtn");
     btn.disabled = true;
     btn.textContent = "Creating account...";
 
     try {
-      const { token } = await API.signup({ name, phone, gender, password });
+      const { token } = await API.signup({ name, email, phone: phone || undefined, gender, password });
       API.setToken(token);
       window.location.href = "/buy-plan.html";
     } catch (err) {
