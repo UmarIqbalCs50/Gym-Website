@@ -305,6 +305,39 @@ img { max-width: 100%; }
   margin-bottom: 7px;
   color: var(--paper-dim);
 }
+/* Terms & Privacy checkbox */
+.terms-checkbox {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 400 !important;
+  color: var(--paper);
+  margin-bottom: 0;
+}
+
+.terms-checkbox input[type="checkbox"] {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.terms-checkbox span {
+  flex: 1;
+  line-height: 1.5;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.terms-checkbox a {
+  color: var(--amber);
+  text-decoration: underline;
+}
+
+.terms-checkbox a:hover {
+  color: var(--paper);
+}
 .field input,
 .field select,
 .field textarea {
