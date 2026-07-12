@@ -83,8 +83,10 @@ async function connectDB() {
   await client.connect();
   dbInstance = client.db(process.env.MONGODB_DB || "hm_fitness");
 
-  // Unique indexes
-  await dbInstance.collection("users").createIndex({ email: 1 }, { unique: true });
+  // Unique indexes. sparse:true means "only enforce uniqueness among documents
+  // that actually have this field" — needed because members who signed up
+  // before email/phone were required won't have that field at all.
+  await dbInstance.collection("users").createIndex({ email: 1 }, { unique: true, sparse: true });
   await dbInstance.collection("users").createIndex({ phone: 1 }, { unique: true, sparse: true });
 
   // Seed default site settings/admin/content on a brand new database.
