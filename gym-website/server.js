@@ -270,8 +270,8 @@ app.post("/api/forgot-password", forgotLimiter, safe(async (req, res) => {
 
 app.post("/api/reset-password", safe(async (req, res) => {
   const { token, newPassword } = req.body;
-  if (!token) return res.status(400).json({ error: "Invalid or missing reset token." });
-  if (!newPassword || newPassword.length < 8)
+  if (!token || typeof token !== "string") return res.status(400).json({ error: "Invalid or missing reset token." });
+  if (!newPassword || typeof newPassword !== "string" || newPassword.length < 8)
     return res.status(400).json({ error: "Password must be at least 8 characters." });
   if (!/[A-Z]/.test(newPassword))
     return res.status(400).json({ error: "Password must contain at least one uppercase letter." });
