@@ -198,8 +198,8 @@ app.post("/api/signup", authLimiter, safe(async (req, res) => {
 
 app.post("/api/login", authLimiter, safe(async (req, res) => {
   const { phone, password } = req.body;
-  if (!phone) return res.status(400).json({ error: "Please enter your phone number." });
-  if (!password) return res.status(400).json({ error: "Please enter your password." });
+if (!phone || typeof phone !== "string") return res.status(400).json({ error: "Please enter your phone number." });
+if (!password || typeof password !== "string") return res.status(400).json({ error: "Please enter your password." });
 
   const user = await db.collection("users").findOne({ phone });
   if (!user) {
