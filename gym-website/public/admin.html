@@ -221,7 +221,9 @@
 
   function logoutAdmin() {
     API.clearAdminToken();
-    location.reload();
+
+    // Redirect to the admin login page
+    window.location.href = "/admin.html";
 }
 
 document.getElementById("logoutLink").addEventListener("click", (e) => {
@@ -235,10 +237,15 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
     loginView.style.display = "none";
     panelView.style.display = "grid";
     document.getElementById("logoutLink").style.display = "inline";
-    loadUsers();
-    loadSettings();
-    loadContent();
-    loadEmailConfig();
+    Promise.all([
+    loadUsers(),
+    loadSettings(),
+    loadContent(),
+    loadEmailConfig()
+]).catch(() => {
+    API.clearAdminToken();
+    window.location.href = "/admin.html";
+});
   }
 
   // ---------- sidebar nav ----------
