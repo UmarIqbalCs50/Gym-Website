@@ -181,7 +181,7 @@ app.post("/api/signup", authLimiter, safe(async (req, res) => {
     id: "u_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
     name: name.trim(),
     email: email.toLowerCase().trim(),
-    phone: phone || null,
+    phone,
     gender,
     passwordHash: bcrypt.hashSync(password, 10),
     plan: null,
