@@ -195,6 +195,12 @@
 
 <script src="/js/api.js"></script>
 <script>
+  API.getSettings().then(s => {
+    document.getElementById("brandName").innerHTML =
+      s.gymName.split(" ").map((w,i)=> i===0 ? w : `<span class="brand-accent">${w}</span>`).join(" ") + ' <span class="small">Admin</span>';
+  }).catch(() => {});
+</script>
+<script>
   const loginView = document.getElementById("loginView");
   const panelView = document.getElementById("panelView");
   const loginMsg = document.getElementById("loginMsg");
