@@ -511,6 +511,22 @@ img { max-width: 100%; }
   cursor: pointer;
   margin-bottom: 4px;
 }
+.logout-btn{
+    margin-top:auto;
+    background:#c62828;
+    color:#fff;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    width:100%;
+    font-weight:600;
+    transition:.2s;
+}
+
+.logout-btn:hover{
+    background:#a71d1d;
+}
 .admin-sidebar button.active, .admin-sidebar button:hover { background: var(--steel); color: var(--paper); }
 .admin-main { padding: 30px 34px; overflow-x: auto; }
 .admin-panel { display: none; }
