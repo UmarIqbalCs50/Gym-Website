@@ -172,12 +172,10 @@ app.post("/api/signup", authLimiter, safe(async (req, res) => {
     return res.status(409).json({ error: "An account with this email address already exists. Try logging in instead." });
   }
 
-  if (phone) {
     const existingPhone = await db.collection("users").findOne({ phone });
     if (existingPhone) {
       return res.status(409).json({ error: "This phone number is already registered to another account." });
     }
-  }
 
   const user = {
     id: "u_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
