@@ -199,7 +199,13 @@
   const panelView = document.getElementById("panelView");
   const loginMsg = document.getElementById("loginMsg");
 
-  if (API.getAdminToken()) showPanel();
+  if (API.getAdminToken()) {
+    showPanel();
+} else {
+    loginView.style.display = "flex";
+    panelView.style.display = "none";
+    document.getElementById("logoutLink").style.display = "none";
+}
 
   document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
