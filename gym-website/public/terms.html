@@ -9,7 +9,7 @@
 <body>
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="brand">HM <span class="brand-accent">Fitness</span></a>
+    <a href="/" class="brand" id="brandName">HM <span class="brand-accent">Fitness</span></a>
     <div class="nav-links"><a href="/signup.html">← Back</a></div>
   </div>
 </nav>
@@ -39,6 +39,12 @@
   <p>For any questions about these terms, please contact the gym directly through the contact information provided on the homepage.</p>
 </div>
 <script src="/js/api.js"></script>
+<script>
+  API.getSettings().then(s => {
+    document.getElementById("brandName").innerHTML =
+      s.gymName.split(" ").map((w,i)=> i===0 ? w : `<span class="brand-accent">${w}</span>`).join(" ");
+  }).catch(() => {});
+</script>
 <script>
 (async () => {
   try {
