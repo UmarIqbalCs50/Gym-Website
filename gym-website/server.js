@@ -79,8 +79,8 @@ function validSignup(body) {
     return "Please enter your full name (at least 2 characters).";
   if (!email || !EMAIL_REGEX.test(email))
     return "Please enter a valid email address.";
-  if (phone && !PK_PHONE_REGEX.test(phone))
-    return "Phone number must be in format 03XXXXXXXXX (11 digits).";
+  if (!phone || !PK_PHONE_REGEX.test(phone))
+    return "Please enter a valid Pakistani phone number in format 03XXXXXXXXX.";
   if (!gender || !["male", "female"].includes(gender))
     return "Please select your gender.";
   if (!password || password.length < 8)
