@@ -219,11 +219,17 @@
     }
   });
 
-  document.getElementById("logoutLink").addEventListener("click", (e) => {
-    e.preventDefault();
+  function logoutAdmin() {
     API.clearAdminToken();
     location.reload();
-  });
+}
+
+document.getElementById("logoutLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    logoutAdmin();
+});
+
+document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmin);
 
   function showPanel() {
     loginView.style.display = "none";
