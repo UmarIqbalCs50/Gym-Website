@@ -151,15 +151,15 @@ img { max-width: 100%; }
 .btn-sm { padding: 8px 14px; font-size: 13px; }
 .btn-ghost { background: transparent; color: var(--paper-dim); border: none; text-decoration: underline; padding: 4px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn-danger {
-  background: #dc2626;
-  color: #fff;
-  border: 1px solid #dc2626;
+.btn-danger{
+    background:#dc2626 !important;
+    color:#fff !important;
+    border:1px solid #dc2626 !important;
 }
 
-.btn-danger:hover {
-  background: #b91c1c;
-  border-color: #b91c1c;
+.btn-danger:hover{
+    background:#b91c1c !important;
+    border-color:#b91c1c !important;
 }
 /* ---------- Hero ---------- */
 .hero {
