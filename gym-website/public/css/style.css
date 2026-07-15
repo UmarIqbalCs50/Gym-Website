@@ -69,6 +69,16 @@ img { max-width: 100%; }
   align-items: baseline;
   gap: 8px;
 }
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border: 1px solid #dc2626;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
 .brand .brand-accent { color: var(--red); }
 .nav-links { display: flex; gap: 28px; align-items: center; }
 .nav-links a {
