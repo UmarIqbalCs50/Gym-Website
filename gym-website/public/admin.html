@@ -255,7 +255,12 @@
   const loginView = document.getElementById("loginView");
   const panelView = document.getElementById("panelView");
   const loginMsg = document.getElementById("loginMsg");
+  let deleteUserId = null;
 
+const deleteModal = document.getElementById("deleteModal");
+const deleteName = document.getElementById("deleteName");
+const deletePhone = document.getElementById("deletePhone");
+const deleteEmail = document.getElementById("deleteEmail");
   if (API.getAdminToken()) {
     showPanel();
 } else {
