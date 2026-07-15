@@ -459,6 +459,24 @@ app.put("/api/admin/users/:id/reset-password", authAdmin, safe(async (req, res) 
     message: "Password reset successfully."
   });
 }));
+app.delete("/api/admin/users/:id", authAdmin, safe(async (req, res) => {
+
+  const result = await db.collection("users").deleteOne({
+    id: req.params.id
+  });
+
+  if (result.deletedCount === 0) {
+    return res.status(404).json({
+      error: "Member not found."
+    });
+  }
+
+  res.json({
+    ok: true,
+    message: "Member deleted successfully."
+  });
+
+}));
 // =========================================================
 // ADMIN: content
 // =========================================================
