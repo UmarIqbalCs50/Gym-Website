@@ -293,14 +293,38 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
           <td>${u.plan || "—"}</td>
           <td><span class="badge-status ${u.paymentStatus}">${u.paymentStatus}</span></td>
           <td class="small">${new Date(u.createdAt).toLocaleDateString()}</td>
-          <td>
-            ${u.paymentStatus === "pending" ? `
-              <button class="btn btn-primary btn-sm" data-verify="${u.id}">Verify</button>
-              <button class="btn btn-outline btn-sm" data-reject="${u.id}">Reject</button>
-            ` : ""}
-          </td>
+         <td>
+  ${u.paymentStatus === "pending" ? `
+    <button class="btn btn-primary btn-sm" data-verify="${u.id}">Verify</button>
+    <button class="btn btn-outline btn-sm" data-reject="${u.id}">Reject</button>
+  ` : ""}
+
+  <button class="btn btn-outline btn-sm" data-reset="${u.id}">
+    Reset Password
+  </button>
+</td>
         </tr>
       `).join("");
+      document.querySelectorAll("[data-reset]").forEach(btn => {
+  btn.addEventListener("click", async () => {
+
+    const newPassword = prompt(
+      "Enter a temporary password for this member:"
+    );
+
+    if (!newPassword) return;
+
+    try {
+      await API.adminResetPassword(btn.dataset.reset, newPassword);
+
+      alert("✅ Password reset successfully.");
+
+    } catch (err) {
+      alert(err.message);
+    }
+
+  });
+});
 
       body.querySelectorAll("[data-verify]").forEach(b => b.addEventListener("click", async () => {
         try { await API.adminVerifyUser(b.dataset.verify); showMsg(usersMsg, "Payment verified — member unlocked.", "success"); loadUsers(); }
