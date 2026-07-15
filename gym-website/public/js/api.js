@@ -36,6 +36,7 @@ const API = {
   adminVerifyUser(id)        { return this.request(`/api/admin/users/${id}/verify`, { method: "POST", admin: true }); },
   adminRejectUser(id)        { return this.request(`/api/admin/users/${id}/reject`, { method: "POST", admin: true }); },
   adminResetPassword(id, newPassword) { return this.request(`/api/admin/users/${id}/reset-password`, { method: "PUT", body: { newPassword }, admin: true }); },
+  adminDeleteUser(id) { return this.request(`/api/admin/users/${id}`, { method: "DELETE", admin: true }); },
   adminUpdateSettings(p)     { return this.request("/api/admin/settings", { method: "PUT", body: p, admin: true }); },
   adminGetContent()          { return this.request("/api/admin/content", { admin: true }); },
   adminUpdateContent(p)      { return this.request("/api/admin/content", { method: "PUT", body: p, admin: true }); },
