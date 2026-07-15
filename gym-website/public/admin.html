@@ -309,6 +309,7 @@
   }).catch(() => {});
 </script>
 <script>
+  let users = [];
   const loginView = document.getElementById("loginView");
   const panelView = document.getElementById("panelView");
   const loginMsg = document.getElementById("loginMsg");
@@ -395,7 +396,7 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
   const usersMsg = document.getElementById("usersMsg");
   async function loadUsers() {
     try {
-      const users = await API.adminGetUsers();
+       users = await API.adminGetUsers();
       const body = document.getElementById("usersBody");
       if (!users.length) {
         body.innerHTML = `<tr><td colspan="7" class="small">No members yet.</td></tr>`;
