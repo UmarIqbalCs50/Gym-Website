@@ -274,6 +274,7 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
       document.getElementById("panel-" + btn.dataset.panel).classList.add("active");
     });
   });
+  
 
   // ---------- users / payments ----------
   const usersMsg = document.getElementById("usersMsg");
@@ -325,6 +326,31 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
 
     } catch (err) {
       alert(err.message);
+    }
+
+  });
+});
+      document.querySelectorAll("[data-delete]").forEach(btn => {
+  btn.addEventListener("click", async () => {
+
+    const confirmed = confirm(
+      "⚠️ Are you sure you want to permanently delete this member?\n\nThis action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+      await API.adminDeleteUser(btn.dataset.delete);
+
+      alert("✅ Member deleted successfully.");
+
+      loadUsers();
+
+    } catch (err) {
+
+      alert(err.message);
+
     }
 
   });
