@@ -244,6 +244,63 @@
 
   </div>
 </div>
+  <!-- Reset Password Modal -->
+<div id="resetModal" class="modal-overlay" style="display:none;">
+
+  <div class="modal-card">
+
+    <h2>Reset Password</h2>
+
+    <p class="small">
+      Enter a new password for this member.
+    </p>
+
+    <div class="field">
+      <label>Name</label>
+      <input id="resetName" readonly>
+    </div>
+
+    <div class="field">
+      <label>Phone</label>
+      <input id="resetPhone" readonly>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input id="resetEmail" readonly>
+    </div>
+
+    <div class="field">
+      <label>New Password</label>
+      <input
+        id="resetPasswordInput"
+        type="password"
+        placeholder="Enter new password">
+    </div>
+
+    <div class="msg show error" style="margin-top:10px;">
+      The member's current password will stop working immediately.
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
+
+      <button
+        id="cancelResetBtn"
+        class="btn btn-outline">
+        Cancel
+      </button>
+
+      <button
+        id="confirmResetBtn"
+        class="btn btn-primary">
+        Reset Password
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 <script src="/js/api.js"></script>
 <script>
   API.getSettings().then(s => {
@@ -261,6 +318,13 @@ const deleteModal = document.getElementById("deleteModal");
 const deleteName = document.getElementById("deleteName");
 const deletePhone = document.getElementById("deletePhone");
 const deleteEmail = document.getElementById("deleteEmail");
+  let resetUserId = null;
+
+const resetModal = document.getElementById("resetModal");
+const resetName = document.getElementById("resetName");
+const resetPhone = document.getElementById("resetPhone");
+const resetEmail = document.getElementById("resetEmail");
+const resetPasswordInput = document.getElementById("resetPasswordInput");
   if (API.getAdminToken()) {
     showPanel();
 } else {
@@ -361,25 +425,24 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
 </td>
         </tr>
       `).join("");
-      document.querySelectorAll("[data-reset]").forEach(btn => {
-  btn.addEventListener("click", async () => {
+     document.querySelectorAll("[data-reset]").forEach(btn => {
 
-    const newPassword = prompt(
-      "Enter a temporary password for this member:"
-    );
+    btn.addEventListener("click", () => {
 
-    if (!newPassword) return;
+        const user = users.find(u => u.id === btn.dataset.reset);
 
-    try {
-      await API.adminResetPassword(btn.dataset.reset, newPassword);
+        resetUserId = user.id;
 
-      alert("✅ Password reset successfully.");
+        resetName.value = user.name;
+        resetPhone.value = user.phone;
+        resetEmail.value = user.email;
 
-    } catch (err) {
-      alert(err.message);
-    }
+        resetPasswordInput.value = "";
 
-  });
+        resetModal.style.display = "flex";
+
+    });
+
 });
      document.querySelectorAll("[data-delete]").forEach(btn => {
 
@@ -626,6 +689,43 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
         deleteUserId = null;
 
         await loadUsers();
+
+    } catch (err) {
+
+        alert(err.message);
+
+    }
+
+});
+  document.getElementById("cancelResetBtn").addEventListener("click", () => {
+
+    resetModal.style.display = "none";
+
+    resetUserId = null;
+
+    resetPasswordInput.value = "";
+
+});
+  document.getElementById("confirmResetBtn").addEventListener("click", async () => {
+
+    const password = resetPasswordInput.value.trim();
+
+    if (password.length < 8) {
+        alert("Password must be at least 8 characters.");
+        return;
+    }
+
+    try {
+
+        await API.adminResetPassword(resetUserId, password);
+
+        alert("✅ Password reset successfully.");
+
+        resetModal.style.display = "none";
+
+        resetUserId = null;
+
+        resetPasswordInput.value = "";
 
     } catch (err) {
 
