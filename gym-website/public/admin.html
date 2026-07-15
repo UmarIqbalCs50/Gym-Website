@@ -381,30 +381,22 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
 
   });
 });
-      document.querySelectorAll("[data-delete]").forEach(btn => {
-  btn.addEventListener("click", async () => {
+     document.querySelectorAll("[data-delete]").forEach(btn => {
 
-    const confirmed = confirm(
-      "⚠️ Are you sure you want to permanently delete this member?\n\nThis action cannot be undone."
-    );
+    btn.addEventListener("click", () => {
 
-    if (!confirmed) return;
+        const user = users.find(u => u.id === btn.dataset.delete);
 
-    try {
+        deleteUserId = user.id;
 
-      await API.adminDeleteUser(btn.dataset.delete);
+        deleteName.value = user.name;
+        deletePhone.value = user.phone;
+        deleteEmail.value = user.email;
 
-      alert("✅ Member deleted successfully.");
+        deleteModal.style.display = "flex";
 
-      loadUsers();
+    });
 
-    } catch (err) {
-
-      alert(err.message);
-
-    }
-
-  });
 });
 
       body.querySelectorAll("[data-verify]").forEach(b => b.addEventListener("click", async () => {
@@ -614,6 +606,34 @@ document.getElementById("sidebarLogoutBtn").addEventListener("click", logoutAdmi
   function escapeAttr(str) {
     return (str || "").replace(/"/g, "&quot;");
   }
+  document.getElementById("cancelDeleteBtn").addEventListener("click", () => {
+
+    deleteModal.style.display = "none";
+
+    deleteUserId = null;
+
+});
+  document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+
+    if (!deleteUserId) return;
+
+    try {
+
+        await API.adminDeleteUser(deleteUserId);
+
+        deleteModal.style.display = "none";
+
+        deleteUserId = null;
+
+        await loadUsers();
+
+    } catch (err) {
+
+        alert(err.message);
+
+    }
+
+});
 </script>
 </body>
 </html>
