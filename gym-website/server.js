@@ -421,7 +421,44 @@ app.post("/api/admin/users/:id/reject", authAdmin, safe(async (req, res) => {
   if (!result) return res.status(404).json({ error: "Member not found." });
   res.json(publicUser(result));
 }));
+app.put("/api/admin/users/:id/reset-password", authAdmin, safe(async (req, res) => {
+  const { newPassword } = req.body;
 
+  if (!newPassword || typeof newPassword !== "string") {
+    return res.status(400).json({ error: "Please enter a new password." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters." });
+  }
+
+  if (!/[A-Z]/.test(newPassword)) {
+    return res.status(400).json({ error: "Password must contain at least one uppercase letter." });
+  }
+
+  if (!/[0-9]/.test(newPassword)) {
+    return res.status(400).json({ error: "Password must contain at least one number." });
+  }
+
+  const result = await db.collection("users").findOneAndUpdate(
+    { id: req.params.id },
+    {
+      $set: {
+        passwordHash: bcrypt.hashSync(newPassword, 10)
+      }
+    },
+    { returnDocument: "after" }
+  );
+
+  if (!result) {
+    return res.status(404).json({ error: "Member not found." });
+  }
+
+  res.json({
+    ok: true,
+    message: "Password reset successfully."
+  });
+}));
 // =========================================================
 // ADMIN: content
 // =========================================================
